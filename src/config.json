@@ -1,6 +1,6 @@
 {
   "starRadius": 3,
-  "firstStarColor": "#DEA164",
+  "firstStarColor": "red",
   "lastStarColor": "#DEA164",
   "starColor": "#E4FBFF"
 }
