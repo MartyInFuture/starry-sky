@@ -54,30 +54,43 @@ function createDots(amount = 10, obj = randomPosition()) {
   createDots(--amount);
 }
 
-createDots();
-const lines = canvas.getContext('2d');
-lines.beginPath();
+createDots(5);
+
 function createLines(starsArr) {
+  const lines = canvas.getContext('2d');
+  lines.beginPath();
+
   const newArr = [...starsArr];
   const shortestWayArr = [newArr[0]];
 
+  let fullLength = 0;
+
   const newCoordinate = now => {
     if (now === undefined) return false;
-    console.log(newArr.indexOf(now));
     now.isUsed = true;
-    let some = 9999;
+    let some = Math.sqrt(
+      Math.pow(document.documentElement.clientWidth, 2) +
+        Math.pow(document.documentElement.clientHeight, 2),
+    );
     let obj = {};
     for (let i = 0; i < starsArr.length - 1; i++) {
       if (
-        Math.abs(now.average - newArr[i].average) < some &&
+        Math.sqrt(
+          Math.pow(now.width - newArr[i].width, 2) + Math.pow(now.height - newArr[i].height, 2),
+        ) < some &&
         !newArr[i].isUsed &&
         i != starsArr.length - 1
       ) {
-        some = Math.abs(now.average - newArr[i].average);
+        some = Math.sqrt(
+          Math.pow(now.width - newArr[i].width, 2) + Math.pow(now.height - newArr[i].height, 2),
+        );
         obj = newArr[i];
       }
     }
     console.log(some);
+
+    fullLength += some;
+
     if (obj.width != undefined) shortestWayArr.push(obj);
     newCoordinate(newArr[newArr.indexOf(obj)]);
   };
@@ -88,8 +101,6 @@ function createLines(starsArr) {
     lines.lineTo(shortestWayArr[i + 1].width, shortestWayArr[i + 1].height);
     lines.stroke();
   }
-  console.log(newArr);
-  console.log(shortestWayArr);
 }
 
 createLines(starsArr);
