@@ -1,6 +1,9 @@
 {
-  "starRadius": 3,
-  "firstStarColor": "red",
-  "lastStarColor": "#DEA164",
-  "starColor": "#E4FBFF"
+  "starRadius": 7,
+  "firstStarColor": "#5C7FFC",
+  "lastStarColor": "#FFF06E",
+  "starColor": "#FCFCFC",
+  "sky": "#020204",
+  "dotted_line": "#CCCCCC",
+  "star_amount": 50
 }

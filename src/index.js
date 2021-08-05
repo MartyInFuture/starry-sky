@@ -1,34 +1,46 @@
 import './scss/main.scss';
 import config from './config.json';
+import { randomPosition } from './functions';
 
-const canvas = document.querySelector('#canvas');
-canvas.style.backgroundColor = '#111f28';
-
-function randomPosition() {
-  const position = {
-    width: 0,
-    height: 0,
-  };
-  position.width = parseInt(
-    Math.random() * (document.documentElement.clientWidth - config.starRadius) + config.starRadius,
-  );
-  position.height = parseInt(
-    Math.random() * (document.documentElement.clientHeight - config.starRadius) + config.starRadius,
-  );
-  return position;
-}
-
-function resizeCanvas() {
+const createCanvas = () => {
+  const canvas = document.querySelector('#canvas');
   canvas.width = document.documentElement.clientWidth;
   canvas.height = document.documentElement.clientHeight;
+  const background = canvas.getContext('2d');
+
+  const gradient = background.createLinearGradient(
+    document.documentElement.clientWidth / 2,
+    document.documentElement.clientHeight,
+    document.documentElement.clientWidth / 2,
+    0,
+  );
+  gradient.addColorStop(0, '#15286C');
+  gradient.addColorStop(1, '#000316');
+
+  background.fillStyle = gradient;
+  background.fillRect(
+    0,
+    0,
+    document.documentElement.clientWidth,
+    document.documentElement.clientHeight,
+  );
+};
+
+createCanvas();
+
+function resizeCanvas() {
+  createCanvas();
 }
-resizeCanvas();
 
 window.addEventListener('resize', resizeCanvas);
-const circle = canvas.getContext('2d');
-let isFirst = true;
+
+const star = canvas.getContext('2d');
+star.strokeStyle = '#red';
+star.stroke();
 const starsArr = [];
-function createDots(amount = 10, obj = randomPosition()) {
+let isFirst = true;
+
+const createDots = (amount = 10, obj = randomPosition()) => {
   let color = config.starColor;
   if (isFirst) {
     obj.position = 'first';
@@ -37,33 +49,26 @@ function createDots(amount = 10, obj = randomPosition()) {
   }
   if (amount === 1) {
     obj.position = 'last';
-
     color = config.lastStarColor;
   }
   if (amount === 0) return false;
-  // console.log(obj);
-  circle.beginPath();
-  circle.arc(obj.width, obj.height, 3, 0, Math.PI * 2);
-  circle.fillStyle = color;
-  circle.fill();
+  star.beginPath();
+  star.arc(obj.width, obj.height, config.starRadius, 0, Math.PI * 2);
+  star.fillStyle = color;
+  star.fill();
 
-  obj.average = parseInt((obj.height + obj.width) / 2);
   obj.isUsed = false;
   starsArr.push(obj);
 
   createDots(--amount);
-}
+};
 
-createDots(5);
+createDots(config.star_amount);
 
-function createLines(starsArr) {
-  const lines = canvas.getContext('2d');
-  lines.beginPath();
-
+const createCoordinateArr = starsArr => {
   const newArr = [...starsArr];
   const shortestWayArr = [newArr[0]];
-
-  let fullLength = 0;
+  console.log(newArr);
 
   const newCoordinate = now => {
     if (now === undefined) return false;
@@ -73,34 +78,36 @@ function createLines(starsArr) {
         Math.pow(document.documentElement.clientHeight, 2),
     );
     let obj = {};
+
     for (let i = 0; i < starsArr.length - 1; i++) {
-      if (
-        Math.sqrt(
-          Math.pow(now.width - newArr[i].width, 2) + Math.pow(now.height - newArr[i].height, 2),
-        ) < some &&
-        !newArr[i].isUsed &&
-        i != starsArr.length - 1
-      ) {
-        some = Math.sqrt(
-          Math.pow(now.width - newArr[i].width, 2) + Math.pow(now.height - newArr[i].height, 2),
-        );
+      const hypotenuse = Math.sqrt(
+        Math.pow(now.width - newArr[i].width, 2) + Math.pow(now.height - newArr[i].height, 2),
+      );
+      if (hypotenuse < some && !newArr[i].isUsed && i != starsArr.length - 1) {
+        some = hypotenuse;
         obj = newArr[i];
       }
     }
-    console.log(some);
-
-    fullLength += some;
-
     if (obj.width != undefined) shortestWayArr.push(obj);
     newCoordinate(newArr[newArr.indexOf(obj)]);
   };
   newCoordinate(newArr[0]);
+
   shortestWayArr.push(newArr[newArr.length - 1]);
+
+  createLines(shortestWayArr);
+};
+
+const createLines = shortestWayArr => {
+  const lines = canvas.getContext('2d');
+  lines.setLineDash([7, 7]);
+  lines.lineJoin = 'round';
+  lines.strokeStyle = config.dotted_line;
+  lines.beginPath();
+  lines.moveTo(shortestWayArr[0].width, shortestWayArr[0].height);
   for (let i = 0; i < shortestWayArr.length - 1; i++) {
-    lines.moveTo(shortestWayArr[i].width, shortestWayArr[i].height);
     lines.lineTo(shortestWayArr[i + 1].width, shortestWayArr[i + 1].height);
     lines.stroke();
   }
-}
-
-createLines(starsArr);
+};
+createCoordinateArr(starsArr);
